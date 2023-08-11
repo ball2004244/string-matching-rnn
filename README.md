@@ -1,2 +1,4 @@
 # string-matching-rnn
-Match 2 strings with RNN
+- This project develops an AI algorithm to
+match 2 strings
+- We use Tensorflow to build a RNN model
