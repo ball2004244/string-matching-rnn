@@ -60,3 +60,4 @@ for s1, s2 in new_samples:
 # Now you can use new_encoded_samples for further analysis or predictions
 print("Encoded data for new samples:")
 print(new_encoded_samples)
+
