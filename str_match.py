@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-##! This python file is converted from jupyter notebook file
-# In[104]:
+# In[23]:
 
 
 '''
 IMPORT LIBRARIES
 '''
 import pandas as pd
-import numpy as np
-import re
-
+from typing import List, Tuple, Union
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.models import Sequential, Model
+from keras.models import Model, load_model
 from keras.callbacks import Callback
-from keras.layers import Dense, Dropout, Activation, Flatten, LSTM, Embedding, Bidirectional, Input, Concatenate
+from keras.layers import Dense, LSTM, Embedding, Bidirectional, Input, Concatenate
 
 
 # In[69]:
@@ -46,20 +43,29 @@ seq2_list = train_data['2nd_seq'].tolist()
 label_list = train_data['label'].values
 
 
-# In[71]:
+# In[17]:
 
 
 # tokenize and pad data
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts(seq1_list + seq2_list)
-tokenized_seq1_list = tokenizer.texts_to_sequences(seq1_list)
-tokenized_seq2_list = tokenizer.texts_to_sequences(seq2_list)
+def data_preprocess(seq1_lst: List[str], seq2_lst: List[str]) -> Tuple[List[int], List[int], int, int]:
+    tokenizer = Tokenizer()
+    tokenizer.fit_on_texts(seq1_lst + seq2_lst)
+    tokenized_seq1_list = tokenizer.texts_to_sequences(seq1_lst)
+    tokenized_seq2_list = tokenizer.texts_to_sequences(seq2_lst)
 
-vocab_size = len(tokenizer.word_index) + 1
-max_len = max([len(seq) for seq in tokenized_seq1_list + tokenized_seq2_list])
+    vocab_size = len(tokenizer.word_index) + 1
+    max_len = max([len(seq) for seq in tokenized_seq1_list + tokenized_seq2_list])
 
-padded_seq1_list = pad_sequences(tokenized_seq1_list, maxlen=max_len, padding='post')
-padded_seq2_list = pad_sequences(tokenized_seq2_list, maxlen=max_len, padding='post')
+    padded_seq1_list = pad_sequences(tokenized_seq1_list, maxlen=max_len, padding='post')
+    padded_seq2_list = pad_sequences(tokenized_seq2_list, maxlen=max_len, padding='post')
+    
+    return padded_seq1_list, padded_seq2_list, vocab_size, max_len
+
+
+# In[ ]:
+
+
+padded_seq1_list, padded_seq2_list, vocab_size, max_len = data_preprocess(seq1_list, seq2_list)
 
 
 # In[97]:
@@ -77,7 +83,6 @@ MODEL TRAINING
 
 #input 
 X = [padded_seq1_list, padded_seq2_list]
-# X = padded_seq1_list + padded_seq2_list
 y = label_list
 
 
@@ -127,28 +132,49 @@ model.compile(
 
 # Setup checkpoint
 class CustomModelCheckpoint(Callback):
-    def on_epoch_end(self, epoch: int):
+    def on_epoch_end(self, epoch: int, logs=None):
         print('Epoch:', epoch)
         print('Saving model...')
-        self.model.save(f'model.h5', overwrite=True)
+        self.model.save('model.keras', overwrite=True)
             
 custom_checkpoint = CustomModelCheckpoint()
+
+
+# In[ ]:
+
+
+'''
+CHOOSE EITHER ONE OF THE FOLLOWING:
+1. Load trained-model and continue training
+2. Train new model from scratch
+'''
+
+#! 1. Load trained-model
+def load_model(filename: str = 'model.keras'):
+    #load model from file
+    model = load_model(filename)
+    epochs = 10
+    batch_size = 32
+
+    #fit model
+    model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[custom_checkpoint])
 
 
 # In[112]:
 
 
-# training info
+#! 2. TRAIN NEW MODEL
+
 print('Training info: ')
 # print(model.summary())
 
 epochs = 10
-batch_size = 32
+batch_size = 256
 # model training
 model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[custom_checkpoint])
 
 
-# In[ ]:
+# In[24]:
 
 
 '''
@@ -160,5 +186,25 @@ MODEL PREDICT
 5. Analyze result
 '''
 
-# model.save('model.h5')
+def predict(filename: str='model.h5') -> List[Union[bool, float]]:
+    model = load_model(filename)
+    
+    sample_data = (
+        ['test_sequence_1'], 
+        ['test_sequence_2']
+    )
+    
+    processed_data = data_preprocess(sample_data[0], sample_data[1])
+    X_test = list(processed_data[:2])
+    
+    predictions = model.predict(X_test) # output as list of matching probability
+    
+    
+    threshold = 0.5
+    bool_predictions = [True if prediction > threshold else False for prediction in predictions]
+        
+    return predictions
+    # return bool_predictions
+
+print(predict(filename='model.keras'))
 

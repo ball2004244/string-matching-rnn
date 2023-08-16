@@ -161,3 +161,4 @@ cython_debug/
 
 # Dataset
 genomic_dataset_sr_train.txt
+trained_model/
