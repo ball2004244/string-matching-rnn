@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[23]:
+# In[3]:
 
 
 '''
@@ -43,7 +43,7 @@ seq2_list = train_data['2nd_seq'].tolist()
 label_list = train_data['label'].values
 
 
-# In[17]:
+# In[6]:
 
 
 # tokenize and pad data
@@ -117,7 +117,7 @@ bi_lstm_layer = Bidirectional(
 bi_lstm_layer = Bidirectional(
     LSTM(64)
 ) (bi_lstm_layer)
-output_layer = Dense(output_dim, activation='sigmoid') (bi_lstm_layer)
+output_layer = Dense(output_dim, activation='softmax') (bi_lstm_layer)
 
 model = Model(inputs=[input1, input2], outputs=output_layer)
 model.compile(
@@ -127,7 +127,7 @@ model.compile(
 )
 
 
-# In[111]:
+# In[4]:
 
 
 # Setup checkpoint
@@ -140,7 +140,7 @@ class CustomModelCheckpoint(Callback):
 custom_checkpoint = CustomModelCheckpoint()
 
 
-# In[ ]:
+# In[1]:
 
 
 '''
@@ -150,13 +150,13 @@ CHOOSE EITHER ONE OF THE FOLLOWING:
 '''
 
 #! 1. Load trained-model
-def load_model(filename: str = 'model.keras'):
+def load_trained_model(filename: str = 'model.keras'):
     #load model from file
     model = load_model(filename)
     epochs = 10
     batch_size = 32
 
-    #fit model
+    # continue training
     model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[custom_checkpoint])
 
 
@@ -164,17 +164,21 @@ def load_model(filename: str = 'model.keras'):
 
 
 #! 2. TRAIN NEW MODEL
-
-print('Training info: ')
-# print(model.summary())
-
-epochs = 10
-batch_size = 256
-# model training
-model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[custom_checkpoint])
+def train_new_model():
+    epochs = 100
+    batch_size = 32
+    # model training
+    model.fit(X, y, epochs=epochs, batch_size=batch_size, callbacks=[custom_checkpoint])
 
 
-# In[24]:
+# In[ ]:
+
+
+print('Start training...')
+train_new_model()
+
+
+# In[10]:
 
 
 '''
@@ -189,9 +193,13 @@ MODEL PREDICT
 def predict(filename: str='model.h5') -> List[Union[bool, float]]:
     model = load_model(filename)
     
+    # sample_data = (
+    #     ['test_sequence_1'], 
+    #     ['test_sequence_2']
+    # )
     sample_data = (
-        ['test_sequence_1'], 
-        ['test_sequence_2']
+        ['test_sequence_1'],
+        ['another_sequence_10']
     )
     
     processed_data = data_preprocess(sample_data[0], sample_data[1])
@@ -206,5 +214,12 @@ def predict(filename: str='model.h5') -> List[Union[bool, float]]:
     return predictions
     # return bool_predictions
 
-print(predict(filename='model.keras'))
+
+# In[ ]:
+
+
+print('Start predicting...')
+# print(predict(filename='model.keras'))
+
+print('Done')
 
