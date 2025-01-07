@@ -8,13 +8,11 @@ match 2 strings
 `model-1.keras`: 
 - 2 Input -> 2 Embedding -> Concatenate -> Bi-lstm 1 -> Bi-lstm 2 -> Dense -> Output
 
-- Epochs: 10, Batch size: 256
+- Epochs: 20, Batch size: 2048
 - Dense's activation: Sigmoid
 - Loss: Binary Crossentropy
+- Optimizer: Adam
 
-`model-2.keras`:
-- 2 Input -> 2 Embedding -> Concatenate -> Bi-lstm 1 -> Bi-lstm 2 -> Dense -> Output
-
-- Epochs: 10, Batch size: 32
-- Dense's activation: Softmax
-- Loss: Binary Crossentropy
+## Installation
+- Need Conda installed
+- Run `conda env create -f environment.yml` to create the environment
